@@ -76,7 +76,7 @@
     sw $a1, 12($sp)         # save arg2
     sw $a0, 8($sp)          # save arg1
     sw $s3, 4($sp)          # save j
-    sw $f1, 0($sp)          # save tempMinCost
+    swc1 $f1, 0($sp)        # save tempMinCost
 
     addi $t0, $zero, 127    # $t0 = (1 << 7) - 1 = 127
     bne $a1, $t0, gMC2      # if visitMask != $t0, branch to gMC2
@@ -136,7 +136,7 @@
     lw $a1, 12($sp)         # restore arg2
     lw $a0, 8($sp)          # restore arg1
     lw $s3, 4($sp)          # restore j
-    lw $f1, 0($sp)          # restore tempMinCost
+    lwc1 $f1, 0($sp)        # restore tempMinCost
     addi $sp, $sp, 20       # move sp to pop 5 values
 
     addi $t0, $zero, 7      # $t0 = 7
