@@ -71,12 +71,10 @@
   # test fin
 
   gMC1:
-    addi $sp, $sp, -20      # move sp to save 5 values
-    sw $ra, 26($sp)         # save return addr
-    sw $a1, 12($sp)         # save arg2
-    sw $a0, 8($sp)          # save arg1
-    sw $s3, 4($sp)          # save j
-    swc1 $f1, 0($sp)        # save tempMinCost
+    addi $sp, $sp, -12      # move sp to save 3 values
+    sw $ra, 8($sp)          # save return addr
+    sw $a1, 4($sp)          # save arg2
+    sw $a0, 0($sp)          # save arg1
 
     addi $t0, $zero, 127    # $t0 = (1 << 7) - 1 = 127
     bne $a1, $t0, gMC2      # if visitMask != $t0, branch to gMC2
@@ -94,7 +92,7 @@
     s.s $f3, 0($t3)         # memo[i][visitMask] = $f3
 
     mov.s $f0, $f3          # $f0 = dist[i][0] (return value)
-    addi $sp, $sp, 20       # move sp to pop 5 values
+    addi $sp, $sp, 12       # move sp to pop 3 values
     jr $ra                  # return
 
   gMC2:
@@ -109,7 +107,7 @@
     bc1t gMC3               # if condition-code == 1, branch to gMC3
 
     mov.s $f0, $f3          # $f0 = memo[i][visitMask] (return value)
-    addi $sp, $sp, 20       # move sp to pop 5 values
+    addi $sp, $sp, 12       # move sp to pop 3 values
     jr $ra                  # return
 
   gMC3:
@@ -130,7 +128,10 @@
     or $t1, $t0, $a1        # $t1 = visitMask | (1 << j)
     add $a0, $s3, $zero     # $a0 = arg1 = j
     add $a1, $t1, $zero     # $a1 = arg2 = visitMask | (1 << j)
-    jal gMC0                # recursive call
+    addi $sp, $sp, -8       # move sp to save 2 values
+    sw $s3, 4($sp)          # save j
+    swc1 $f1, 0($sp)        # save tempMinCost
+    jal gMC1                # recursive call
 
     lw $ra, 16($sp)         # restore return addr
     lw $a1, 12($sp)         # restore arg2
@@ -154,7 +155,7 @@
 
   gMC3_incj:
     addi $s3, $s3, 1        # ($s3 = j) += 1
-    j gMC2_for              # continue the loop
+    j gMC3_for              # continue the loop
 
   gMC3_exit:
     addi $t0, $zero, 7      # $t0 = 7
