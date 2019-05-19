@@ -64,6 +64,9 @@
     l.s $f6 f_max           # $f6 = 9999.0 (big enough number)
     jal gMC1                # call getMinCost(0, 1)
 
+    li $v0, 10              # Exit
+    syscall
+
   exit2:
     addi $s2, $s2, 1        # ($s2 = i) += 1
     j for1tst
@@ -71,10 +74,12 @@
   # test fin
 
   gMC1:
-    addi $sp, $sp, -12      # move sp to save 3 values
-    sw $ra, 8($sp)          # save return addr
-    sw $a1, 4($sp)          # save arg2
-    sw $a0, 0($sp)          # save arg1
+    addi $sp, $sp, -20      # move sp to save 5 values
+    sw $ra, 16($sp)         # save return addr
+    sw $a1, 12($sp)         # save arg2
+    sw $a0, 8($sp)          # save arg1
+    sw $s3, 4($sp)          # save j
+    swc1 $f1, 0($sp)        # save tempMinCost
 
     addi $t0, $zero, 127    # $t0 = (1 << 7) - 1 = 127
     bne $a1, $t0, gMC2      # if visitMask != $t0, branch to gMC2
@@ -92,7 +97,7 @@
     s.s $f3, 0($t3)         # memo[i][visitMask] = $f3
 
     mov.s $f0, $f3          # $f0 = dist[i][0] (return value)
-    addi $sp, $sp, 12       # move sp to pop 3 values
+    addi $sp, $sp, 20       # move sp to pop 5 values
     jr $ra                  # return
 
   gMC2:
@@ -107,7 +112,7 @@
     bc1t gMC3               # if condition-code == 1, branch to gMC3
 
     mov.s $f0, $f3          # $f0 = memo[i][visitMask] (return value)
-    addi $sp, $sp, 12       # move sp to pop 3 values
+    addi $sp, $sp, 20       # move sp to pop 5 values
     jr $ra                  # return
 
   gMC3:
@@ -128,7 +133,6 @@
     or $t1, $t0, $a1        # $t1 = visitMask | (1 << j)
     add $a0, $s3, $zero     # $a0 = arg1 = j
     add $a1, $t1, $zero     # $a1 = arg2 = visitMask | (1 << j)
-    addi $sp, $sp, -8       # move sp to save 2 values
     sw $s3, 4($sp)          # save j
     swc1 $f1, 0($sp)        # save tempMinCost
     jal gMC1                # recursive call
@@ -138,7 +142,6 @@
     lw $a0, 8($sp)          # restore arg1
     lw $s3, 4($sp)          # restore j
     lwc1 $f1, 0($sp)        # restore tempMinCost
-    addi $sp, $sp, 20       # move sp to pop 5 values
 
     addi $t0, $zero, 7      # $t0 = 7
     mul $t0, $t0, $a0       # $t0 = ($a0 = i) * 7
@@ -166,4 +169,5 @@
     s.s $f1, 0($t1)         # memo[i][visitMask] = tempMinCost
 
     mov.s $f0, $f1          # $f0 = tempMinCost (return value)
+    addi $sp, $sp, 20       # move sp to pop 5 values
     jr $ra                  # return
